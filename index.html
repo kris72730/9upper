@@ -7,26 +7,30 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
             background-color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
         }
         #logo {
             width: 200px;
-            margin: 20px auto;
+            margin-top: 20px;
         }
         #topic-container {
             background: white;
             padding: 20px;
             border-radius: 10px;
-            display: inline-block;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            margin-top: 20px;
         }
         #difficulty {
             color: gold;
             font-size: 20px;
         }
-        #rules-button, #close-rules, #ready-button, #reveal-button {
+        .button {
             margin-top: 20px;
             padding: 10px;
             background-color: #007bff;
@@ -50,26 +54,31 @@
 </head>
 <body>
     <img id="logo" src="logo.png" alt="9upper Logo">
+    
     <div id="topic-container">
         <h1 id="word">Loading...</h1>
         <p id="hint">Hint: ...</p>
         <p id="difficulty">⭐</p>
-        <button id="new-topic">新題目</button>
-        <button id="ready-button">準備好</button>
+        <button class="button" id="ready-button">準備好</button>
+        <button class="button" id="reveal-button" style="display:none;">開估</button>
+        <button class="button" id="new-topic" style="display:none;">新題目</button>
     </div>
-    <button id="rules-button">遊戲規則</button>
+    
+    <button class="button" id="rules-button">遊戲規則</button>
+    
     <div id="rules-container">
         <h2>遊戲規則</h2>
         <p>1. 每回合抽取一個冷知識詞語，所有玩家需解釋這個詞。</p>
         <p>2. 只有一位「老實人」看到真正的解釋，其他玩家必須即興創造合理的說明。</p>
         <p>3. 「諗樣」玩家必須從中找出「老實人」。</p>
-        <button id="close-rules">關閉</button>
+        <button class="button" id="close-rules">關閉</button>
     </div>
+    
     <div id="explanation-container">
         <h2>詞語解釋</h2>
         <p id="explanation">...</p>
-        <button id="reveal-button">開估</button>
     </div>
+    
     <script>
         let topics = [];
         let currentTopic = null;
@@ -86,6 +95,9 @@
             document.getElementById("hint").textContent = "Hint: " + currentTopic.hint;
             document.getElementById("difficulty").innerHTML = "⭐".repeat(currentTopic.difficulty);
             document.getElementById("explanation-container").style.display = "none";
+            document.getElementById("ready-button").style.display = "inline-block";
+            document.getElementById("reveal-button").style.display = "none";
+            document.getElementById("new-topic").style.display = "none";
         }
         
         document.getElementById("new-topic").addEventListener("click", loadNewTopic);
@@ -98,18 +110,24 @@
 
         document.getElementById("ready-button").addEventListener("click", () => {
             if (!currentTopic) return;
-            document.getElementById("explanation").textContent = currentTopic.explanation;
-            document.getElementById("explanation-container").style.display = "block";
-            
+            document.getElementById("ready-button").textContent = "倒數 15 秒";
             let countdown = 15;
             let interval = setInterval(() => {
-                document.getElementById("explanation").textContent = currentTopic.explanation + "\n倒數: " + countdown + " 秒";
+                document.getElementById("ready-button").textContent = "倒數 " + countdown + " 秒";
                 countdown--;
                 if (countdown < 0) {
                     clearInterval(interval);
-                    document.getElementById("explanation-container").style.display = "none";
+                    document.getElementById("ready-button").style.display = "none";
+                    document.getElementById("reveal-button").style.display = "inline-block";
                 }
             }, 1000);
+        });
+
+        document.getElementById("reveal-button").addEventListener("click", () => {
+            document.getElementById("explanation").textContent = currentTopic.explanation;
+            document.getElementById("explanation-container").style.display = "block";
+            document.getElementById("reveal-button").style.display = "none";
+            document.getElementById("new-topic").style.display = "inline-block";
         });
     </script>
 </body>
