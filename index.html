@@ -25,6 +25,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
         }
         #difficulty {
             color: gold;
@@ -59,9 +60,9 @@
         <h1 id="word">Loading...</h1>
         <p id="hint">Hint: ...</p>
         <p id="difficulty">⭐</p>
+        <button class="button" id="new-topic">新題目</button>
         <button class="button" id="ready-button">準備好</button>
-        <button class="button" id="reveal-button" style="display:none;">開估</button>
-        <button class="button" id="new-topic" style="display:none;">新題目</button>
+        <button class="button" id="reveal-button" style="display: none;">開估</button>
     </div>
     
     <button class="button" id="rules-button">遊戲規則</button>
@@ -78,16 +79,18 @@
         <h2>詞語解釋</h2>
         <p id="explanation">...</p>
     </div>
-    
+
     <script>
         let topics = [];
         let currentTopic = null;
         
+        // 讀取題目庫
         fetch("topics.json")
             .then(response => response.json())
             .then(data => { topics = data; loadNewTopic(); })
             .catch(error => console.error("Error loading topics:", error));
         
+        // 載入新題目
         function loadNewTopic() {
             if (topics.length === 0) return;
             currentTopic = topics[Math.floor(Math.random() * topics.length)];
@@ -95,40 +98,55 @@
             document.getElementById("hint").textContent = "Hint: " + currentTopic.hint;
             document.getElementById("difficulty").innerHTML = "⭐".repeat(currentTopic.difficulty);
             document.getElementById("explanation-container").style.display = "none";
-            document.getElementById("ready-button").style.display = "inline-block";
+
+            // 顯示「準備好」按鈕，隱藏「開估」與「新題目」
+            document.getElementById("ready-button").style.display = "block";
             document.getElementById("reveal-button").style.display = "none";
             document.getElementById("new-topic").style.display = "none";
         }
-        
+
         document.getElementById("new-topic").addEventListener("click", loadNewTopic);
+
         document.getElementById("rules-button").addEventListener("click", () => {
             document.getElementById("rules-container").style.display = "block";
         });
+
         document.getElementById("close-rules").addEventListener("click", () => {
             document.getElementById("rules-container").style.display = "none";
         });
 
         document.getElementById("ready-button").addEventListener("click", () => {
             if (!currentTopic) return;
-            document.getElementById("ready-button").textContent = "倒數 15 秒";
+
+            let readyButton = document.getElementById("ready-button");
+            readyButton.disabled = true;
             let countdown = 15;
+
+            // 倒數開始，顯示提示
+            readyButton.textContent = countdown;
+            document.getElementById("hint").style.display = "block";
+
             let interval = setInterval(() => {
-                document.getElementById("ready-button").textContent = "倒數 " + countdown + " 秒";
                 countdown--;
-                if (countdown < 0) {
+                if (countdown > 0) {
+                    readyButton.textContent = countdown;
+                } else {
                     clearInterval(interval);
-                    document.getElementById("ready-button").style.display = "none";
-                    document.getElementById("reveal-button").style.display = "inline-block";
+                    document.getElementById("hint").style.display = "none"; // 隱藏提示
+                    readyButton.style.display = "none"; // 隱藏準備好按鈕
+                    document.getElementById("reveal-button").style.display = "block"; // 顯示開估按鈕
                 }
             }, 1000);
         });
 
         document.getElementById("reveal-button").addEventListener("click", () => {
+            if (!currentTopic) return;
             document.getElementById("explanation").textContent = currentTopic.explanation;
             document.getElementById("explanation-container").style.display = "block";
-            document.getElementById("reveal-button").style.display = "none";
-            document.getElementById("new-topic").style.display = "inline-block";
+            document.getElementById("reveal-button").style.display = "none"; // 隱藏開估
+            document.getElementById("new-topic").style.display = "block"; // 顯示新題目
         });
+
     </script>
 </body>
 </html>
