@@ -7,8 +7,8 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
         #explanation { margin-top: 20px; font-size: 18px; color: #333; }
-        button { font-size: 20px; padding: 10px 20px; cursor: pointer; margin-top: 10px; }
-        #revealButton, #newTopicButton { display: none; margin: auto; }
+        button { font-size: 20px; padding: 10px 20px; cursor: pointer; margin: 20px auto; display: block; }
+        #revealButton, #newTopicButton { display: none; }
         #word { font-size: 28px; font-weight: bold; }
         #hint { font-size: 16px; color: gray; margin-top: 5px; }
     </style>
@@ -59,7 +59,7 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
                     button.style.display = "none";
-                    explanationBox.innerText = currentTopic.explanation;
+                    explanationBox.innerText = currentTopic.explanation || "(無解釋資料)";
                     document.getElementById("revealButton").style.display = "block";
                 }
             }, 1000);
