@@ -78,6 +78,7 @@
     <div id="explanation-container">
         <h2>詞語解釋</h2>
         <p id="explanation">...</p>
+        <button class="button" id="close-explanation">關閉</button>
     </div>
 
     <script>
@@ -120,7 +121,7 @@
 
             let readyButton = document.getElementById("ready-button");
             readyButton.disabled = true;
-            let countdown = 10;
+            let countdown = 15;
 
             // 倒數開始，顯示提示
             readyButton.textContent = countdown;
@@ -141,10 +142,18 @@
 
         document.getElementById("reveal-button").addEventListener("click", () => {
             if (!currentTopic) return;
+
+            // 顯示解釋
             document.getElementById("explanation").textContent = currentTopic.explanation;
             document.getElementById("explanation-container").style.display = "block";
-            document.getElementById("reveal-button").style.display = "none"; // 隱藏開估
-            document.getElementById("new-topic").style.display = "block"; // 顯示新題目
+            
+            // 隱藏開估按鈕，顯示新題目按鈕
+            document.getElementById("reveal-button").style.display = "none";
+            document.getElementById("new-topic").style.display = "block";
+        });
+
+        document.getElementById("close-explanation").addEventListener("click", () => {
+            document.getElementById("explanation-container").style.display = "none";
         });
 
     </script>
