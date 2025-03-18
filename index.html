@@ -3,96 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9upper 遊戲</title>
+    <title>9upper</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
-        #explanation { margin-top: 20px; font-size: 18px; color: #333; display: none; }
-        button { font-size: 20px; padding: 10px 20px; cursor: pointer; display: block; margin: 20px auto; }
-        #revealButton, #newTopicButton { display: none; }
-        #word { font-size: 28px; font-weight: bold; }
-        #hint { font-size: 16px; color: gray; margin-top: 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        #logo {
+            width: 200px;
+            margin: 20px auto;
+        }
+        #topic-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+        #difficulty {
+            color: gold;
+            font-size: 20px;
+        }
+        #rules-button, #close-rules {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #rules-container {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
     </style>
-    <script>
-        let topics = [];
-        let currentTopic = {};
-
-        async function loadTopics() {
-            try {
-                let response = await fetch("topics.json");
-                if (!response.ok) throw new Error("題庫讀取失敗");
-                topics = await response.json();
-                if (topics.length === 0) throw new Error("題庫為空");
-                fetchNewTopic();
-            } catch (error) {
-                console.error("Error loading topics:", error);
-                document.getElementById("word").innerText = "無法載入題庫";
-                document.getElementById("hint").innerText = "請檢查 topics.json 是否存在";
-            }
-        }
-
-        function fetchNewTopic() {
-            if (topics.length === 0) return;
-            let newTopic = topics[Math.floor(Math.random() * topics.length)];
-            while (newTopic.word === currentTopic.word) {
-                newTopic = topics[Math.floor(Math.random() * topics.length)];
-            }
-            currentTopic = newTopic;
-            
-            document.getElementById("word").innerText = currentTopic.word;
-            document.getElementById("hint").innerText = currentTopic.hint;
-            document.getElementById("explanation").innerText = "";
-            document.getElementById("explanation").style.display = "none";
-            document.getElementById("revealButton").style.display = "none";
-            document.getElementById("newTopicButton").style.display = "none";
-            document.getElementById("readyButton").style.display = "block";
-            document.getElementById("readyButton").innerText = "準備好";
-            document.getElementById("readyButton").disabled = false;
-        }
-
-        function showExplanation() {
-            let button = document.getElementById("readyButton");
-            let explanationBox = document.getElementById("explanation");
-            let timeLeft = 10;
-            button.disabled = true;
-            button.innerText = `倒數 ${timeLeft}s`;
-            
-            if (currentTopic.explanation) {
-                explanationBox.innerText = currentTopic.explanation;
-                explanationBox.style.display = "block";
-            } else {
-                explanationBox.innerText = "(無解釋資料)";
-            }
-            
-            let countdown = setInterval(() => {
-                timeLeft--;
-                button.innerText = `倒數 ${timeLeft}s`;
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    button.style.display = "none";
-                    explanationBox.style.display = "none";
-                    document.getElementById("revealButton").style.display = "block";
-                }
-            }, 1000);
-        }
-
-        function revealExplanation() {
-            let explanationBox = document.getElementById("explanation");
-            explanationBox.innerText = currentTopic.explanation;
-            explanationBox.style.display = "block";
-            document.getElementById("revealButton").style.display = "none";
-            document.getElementById("newTopicButton").style.display = "block";
-        }
-        
-        document.addEventListener("DOMContentLoaded", loadTopics);
-    </script>
 </head>
 <body>
-    <h1>9upper 遊戲</h1>
-    <p><strong>詞彙：</strong> <span id="word"></span></p>
-    <p id="hint"></p>
-    <button id="readyButton" onclick="showExplanation()">準備好</button>
-    <p id="explanation"></p>
-    <button id="revealButton" onclick="revealExplanation()">開估</button>
-    <button id="newTopicButton" onclick="fetchNewTopic()">新題目</button>
+    <img id="logo" src="logo.png" alt="9upper Logo">
+    <div id="topic-container">
+        <h1 id="word">Loading...</h1>
+        <p id="hint">Hint: ...</p>
+        <p id="difficulty">⭐</p>
+        <button id="new-topic">新題目</button>
+    </div>
+    <button id="rules-button">遊戲規則</button>
+    <div id="rules-container">
+        <h2>遊戲規則</h2>
+        <p>1. 每回合抽取一個冷知識詞語，所有玩家需解釋這個詞。</p>
+        <p>2. 只有一位「老實人」看到真正的解釋，其他玩家必須即興創造合理的說明。</p>
+        <p>3. 「諗樣」玩家必須從中找出「老實人」。</p>
+        <button id="close-rules">關閉</button>
+    </div>
+    <script>
+        let topics = [];
+        fetch("topics.json")
+            .then(response => response.json())
+            .then(data => { topics = data; loadNewTopic(); })
+            .catch(error => console.error("Error loading topics:", error));
+        
+        function loadNewTopic() {
+            if (topics.length === 0) return;
+            const topic = topics[Math.floor(Math.random() * topics.length)];
+            document.getElementById("word").textContent = topic.word;
+            document.getElementById("hint").textContent = "Hint: " + topic.hint;
+            document.getElementById("difficulty").innerHTML = "⭐".repeat(topic.difficulty);
+        }
+        
+        document.getElementById("new-topic").addEventListener("click", loadNewTopic);
+        document.getElementById("rules-button").addEventListener("click", () => {
+            document.getElementById("rules-container").style.display = "block";
+        });
+        document.getElementById("close-rules").addEventListener("click", () => {
+            document.getElementById("rules-container").style.display = "none";
+        });
+    </script>
 </body>
 </html>
