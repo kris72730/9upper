@@ -55,8 +55,13 @@
             let timeLeft = 15;
             button.disabled = true;
             button.innerText = `倒數 ${timeLeft}s`;
-            explanationBox.innerText = currentTopic.explanation ? currentTopic.explanation : "(無解釋資料)";
-            explanationBox.style.display = "block";
+            
+            if (currentTopic.explanation) {
+                explanationBox.innerText = currentTopic.explanation;
+                explanationBox.style.display = "block";
+            } else {
+                explanationBox.innerText = "(無解釋資料)";
+            }
             
             let countdown = setInterval(() => {
                 timeLeft--;
