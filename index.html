@@ -76,6 +76,9 @@
         }
 
         function revealExplanation() {
+            let explanationBox = document.getElementById("explanation");
+            explanationBox.innerText = currentTopic.explanation;
+            explanationBox.style.display = "block";
             document.getElementById("revealButton").style.display = "none";
             document.getElementById("newTopicButton").style.display = "block";
         }
