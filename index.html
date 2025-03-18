@@ -26,7 +26,7 @@
             color: gold;
             font-size: 20px;
         }
-        #rules-button, #close-rules {
+        #rules-button, #close-rules, #ready-button, #reveal-button {
             margin-top: 20px;
             padding: 10px;
             background-color: #007bff;
@@ -35,7 +35,7 @@
             cursor: pointer;
             border-radius: 5px;
         }
-        #rules-container {
+        #rules-container, #explanation-container {
             display: none;
             background: white;
             padding: 20px;
@@ -55,6 +55,7 @@
         <p id="hint">Hint: ...</p>
         <p id="difficulty">⭐</p>
         <button id="new-topic">新題目</button>
+        <button id="ready-button">準備好</button>
     </div>
     <button id="rules-button">遊戲規則</button>
     <div id="rules-container">
@@ -64,8 +65,15 @@
         <p>3. 「諗樣」玩家必須從中找出「老實人」。</p>
         <button id="close-rules">關閉</button>
     </div>
+    <div id="explanation-container">
+        <h2>詞語解釋</h2>
+        <p id="explanation">...</p>
+        <button id="reveal-button">開估</button>
+    </div>
     <script>
         let topics = [];
+        let currentTopic = null;
+        
         fetch("topics.json")
             .then(response => response.json())
             .then(data => { topics = data; loadNewTopic(); })
@@ -73,10 +81,11 @@
         
         function loadNewTopic() {
             if (topics.length === 0) return;
-            const topic = topics[Math.floor(Math.random() * topics.length)];
-            document.getElementById("word").textContent = topic.word;
-            document.getElementById("hint").textContent = "Hint: " + topic.hint;
-            document.getElementById("difficulty").innerHTML = "⭐".repeat(topic.difficulty);
+            currentTopic = topics[Math.floor(Math.random() * topics.length)];
+            document.getElementById("word").textContent = currentTopic.word;
+            document.getElementById("hint").textContent = "Hint: " + currentTopic.hint;
+            document.getElementById("difficulty").innerHTML = "⭐".repeat(currentTopic.difficulty);
+            document.getElementById("explanation-container").style.display = "none";
         }
         
         document.getElementById("new-topic").addEventListener("click", loadNewTopic);
@@ -85,6 +94,22 @@
         });
         document.getElementById("close-rules").addEventListener("click", () => {
             document.getElementById("rules-container").style.display = "none";
+        });
+
+        document.getElementById("ready-button").addEventListener("click", () => {
+            if (!currentTopic) return;
+            document.getElementById("explanation").textContent = currentTopic.explanation;
+            document.getElementById("explanation-container").style.display = "block";
+            
+            let countdown = 15;
+            let interval = setInterval(() => {
+                document.getElementById("explanation").textContent = currentTopic.explanation + "\n倒數: " + countdown + " 秒";
+                countdown--;
+                if (countdown < 0) {
+                    clearInterval(interval);
+                    document.getElementById("explanation-container").style.display = "none";
+                }
+            }, 1000);
         });
     </script>
 </body>
