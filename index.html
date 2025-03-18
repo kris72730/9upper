@@ -6,8 +6,8 @@
     <title>9upper 遊戲</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
-        #explanation { margin-top: 20px; font-size: 18px; color: #333; }
-        button { font-size: 20px; padding: 10px 20px; cursor: pointer; margin: 20px auto; display: block; }
+        #explanation { margin-top: 20px; font-size: 18px; color: #333; display: none; }
+        button { font-size: 20px; padding: 10px 20px; cursor: pointer; display: block; margin: 20px auto; }
         #revealButton, #newTopicButton { display: none; }
         #word { font-size: 28px; font-weight: bold; }
         #hint { font-size: 16px; color: gray; margin-top: 5px; }
@@ -19,11 +19,14 @@
         async function loadTopics() {
             try {
                 let response = await fetch("topics.json");
+                if (!response.ok) throw new Error("題庫讀取失敗");
                 topics = await response.json();
+                if (topics.length === 0) throw new Error("題庫為空");
                 fetchNewTopic();
             } catch (error) {
                 console.error("Error loading topics:", error);
                 document.getElementById("word").innerText = "無法載入題庫";
+                document.getElementById("hint").innerText = "請檢查 topics.json 是否存在";
             }
         }
 
@@ -38,6 +41,7 @@
             document.getElementById("word").innerText = currentTopic.word;
             document.getElementById("hint").innerText = currentTopic.hint;
             document.getElementById("explanation").innerText = "";
+            document.getElementById("explanation").style.display = "none";
             document.getElementById("revealButton").style.display = "none";
             document.getElementById("newTopicButton").style.display = "none";
             document.getElementById("readyButton").style.display = "block";
@@ -51,7 +55,8 @@
             let timeLeft = 15;
             button.disabled = true;
             button.innerText = `倒數 ${timeLeft}s`;
-            explanationBox.innerText = "(解釋載入中...)";
+            explanationBox.innerText = currentTopic.explanation ? currentTopic.explanation : "(無解釋資料)";
+            explanationBox.style.display = "block";
             
             let countdown = setInterval(() => {
                 timeLeft--;
@@ -59,7 +64,7 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
                     button.style.display = "none";
-                    explanationBox.innerText = currentTopic.explanation || "(無解釋資料)";
+                    explanationBox.style.display = "none";
                     document.getElementById("revealButton").style.display = "block";
                 }
             }, 1000);
