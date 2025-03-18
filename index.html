@@ -81,81 +81,87 @@
         <button class="button" id="close-explanation">關閉</button>
     </div>
 
-    <script>
+        <script>
         let topics = [];
-        let currentTopic = null;
-        
-        // 讀取題目庫
-        fetch("topics.json")
-            .then(response => response.json())
-            .then(data => { topics = data; loadNewTopic(); })
-            .catch(error => console.error("Error loading topics:", error));
-        
-        // 載入新題目
-        function loadNewTopic() {
-            if (topics.length === 0) return;
-            currentTopic = topics[Math.floor(Math.random() * topics.length)];
-            document.getElementById("word").textContent = currentTopic.word;
-            document.getElementById("hint").textContent = "Hint: " + currentTopic.hint;
-            document.getElementById("difficulty").innerHTML = "⭐".repeat(currentTopic.difficulty);
-            document.getElementById("explanation-container").style.display = "none";
+        let currentTopic = {};
 
-            // 顯示「準備好」按鈕，隱藏「開估」與「新題目」
-            document.getElementById("ready-button").style.display = "block";
-            document.getElementById("reveal-button").style.display = "none";
-            document.getElementById("new-topic").style.display = "none";
+        async function loadTopics() {
+            try {
+                let response = await fetch("topics.json");
+                if (!response.ok) throw new Error("題庫讀取失敗");
+                topics = await response.json();
+                if (topics.length === 0) throw new Error("題庫為空");
+                fetchNewTopic();
+            } catch (error) {
+                console.error("Error loading topics:", error);
+                document.getElementById("word").innerText = "無法載入題庫";
+                document.getElementById("hint").innerText = "請檢查 topics.json 是否存在";
+            }
         }
 
-        document.getElementById("new-topic").addEventListener("click", loadNewTopic);
+        function fetchNewTopic() {
+            if (topics.length === 0) return;
+            let newTopic = topics[Math.floor(Math.random() * topics.length)];
+            while (newTopic.word === currentTopic.word) {
+                newTopic = topics[Math.floor(Math.random() * topics.length)];
+            }
+            currentTopic = newTopic;
+            
+            document.getElementById("word").innerText = currentTopic.word;
+            document.getElementById("hint").innerText = currentTopic.hint;
+            document.getElementById("explanation").innerText = "";
+            document.getElementById("explanation").style.display = "none";
+            document.getElementById("revealButton").style.display = "none";
+            document.getElementById("newTopicButton").style.display = "none";
+            document.getElementById("readyButton").style.display = "block";
+            document.getElementById("readyButton").innerText = "準備好";
+            document.getElementById("readyButton").disabled = false;
+        }
 
-        document.getElementById("rules-button").addEventListener("click", () => {
-            document.getElementById("rules-container").style.display = "block";
-        });
-
-        document.getElementById("close-rules").addEventListener("click", () => {
-            document.getElementById("rules-container").style.display = "none";
-        });
-
-        document.getElementById("ready-button").addEventListener("click", () => {
-            if (!currentTopic) return;
-
-            let readyButton = document.getElementById("ready-button");
-            readyButton.disabled = true;
-            let countdown = 15;
-
-            // 倒數開始，顯示提示
-            readyButton.textContent = countdown;
-            document.getElementById("hint").style.display = "block";
-
-            let interval = setInterval(() => {
-                countdown--;
-                if (countdown > 0) {
-                    readyButton.textContent = countdown;
-                } else {
-                    clearInterval(interval);
-                    document.getElementById("hint").style.display = "none"; // 隱藏提示
-                    readyButton.style.display = "none"; // 隱藏準備好按鈕
-                    document.getElementById("reveal-button").style.display = "block"; // 顯示開估按鈕
+        function showExplanation() {
+            let button = document.getElementById("readyButton");
+            let explanationBox = document.getElementById("explanation");
+            let timeLeft = 15;
+            button.disabled = true;
+            button.innerText = `倒數 ${timeLeft}s`;
+            
+            if (currentTopic.explanation) {
+                explanationBox.innerText = currentTopic.explanation;
+                explanationBox.style.display = "block";
+            } else {
+                explanationBox.innerText = "(無解釋資料)";
+            }
+            
+            let countdown = setInterval(() => {
+                timeLeft--;
+                button.innerText = `倒數 ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    button.style.display = "none";
+                    explanationBox.style.display = "none";
+                    document.getElementById("revealButton").style.display = "block";
                 }
             }, 1000);
-        });
+        }
 
-        document.getElementById("reveal-button").addEventListener("click", () => {
-            if (!currentTopic) return;
-
-            // 顯示解釋
-            document.getElementById("explanation").textContent = currentTopic.explanation;
-            document.getElementById("explanation-container").style.display = "block";
-            
-            // 隱藏開估按鈕，顯示新題目按鈕
-            document.getElementById("reveal-button").style.display = "none";
-            document.getElementById("new-topic").style.display = "block";
-        });
-
-        document.getElementById("close-explanation").addEventListener("click", () => {
-            document.getElementById("explanation-container").style.display = "none";
-        });
-
+        function revealExplanation() {
+            let explanationBox = document.getElementById("explanation");
+            explanationBox.innerText = currentTopic.explanation;
+            explanationBox.style.display = "block";
+            document.getElementById("revealButton").style.display = "none";
+            document.getElementById("newTopicButton").style.display = "block";
+        }
+        
+        document.addEventListener("DOMContentLoaded", loadTopics);
     </script>
+</head>
+<body>
+    <h1>9upper 遊戲</h1>
+    <p><strong>詞彙：</strong> <span id="word"></span></p>
+    <p id="hint"></p>
+    <button id="readyButton" onclick="showExplanation()">準備好</button>
+    <p id="explanation" style="display: none;"></p>
+    <button id="revealButton" onclick="revealExplanation()">開估</button>
+    <button id="newTopicButton" onclick="fetchNewTopic()">新題目</button>
 </body>
 </html>
